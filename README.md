@@ -9,7 +9,8 @@ Hawthorne Racing is a demonstration brand. Content on the site is fictional.
 
 | File | Purpose |
 |------|---------|
-| `index.html` | The entire site: hero, a short team section, and the three partner cards. Fonts, the Hawthorne mark, and the Arbitr logo are base64-embedded, so there are no external requests and no build step. |
+| `index.html` | The entire site: hero, a short team section, and the three partner cards. Fonts, the Hawthorne mark, and all three partner logos are base64-embedded, so the only external request the page makes is the hero photo. No build step. |
+| `hawthorne-car.jpg` | Hero photo, 1100x785, ~140KB. The one asset deliberately *not* inlined — see below. |
 | `404.html` | Branded not-found page. GitHub Pages serves this automatically. |
 | `CNAME` | Custom domain for Pages. Must contain exactly `hawthorneracing.com.au`. |
 | `.nojekyll` | Tells Pages to serve files as-is instead of running them through Jekyll. |
@@ -111,6 +112,46 @@ happen in one place.
   with a non-uniform dark background, so it never sat flush on the page and it
   went soft below roughly 70px tall. If an SVG lockup becomes available, either
   spot can use it directly at any size.
+
+## Hero photo
+
+`hawthorne-car.jpg` is an AI-generated image (Gemini), 1400x1120, ~218KB, cropped
+to keep the front wing intact and re-encoded at JPEG quality 82. It carries all
+three partner decals.
+
+It is a separate file rather than base64 in `:root` like the logos, on purpose. A
+218KB inline photo would sit in the critical path and block HTML parsing until it
+finished downloading, and it could not be cached independently of the page. The
+logos are small enough that inlining wins; a photo is not.
+
+### Two treatments, one asset
+
+Above 980px the photo is `.hero-photo`, an absolutely positioned background
+filling the right half, with the racing lines and dot field in front of it.
+Below 980px it is the in-flow `.hero-figure` stacked under the copy. Only one is
+ever displayed, and both point at the same file, so it stays a single request.
+
+Three things about `.hero-photo` that are easy to break:
+
+- It is inset to `left:45%`, **not** stretched across the whole hero. At full
+  width, `background-size:cover` scales the car across the entire section and the
+  revealed slice starts behind the front wheel. Size the layer to the region you
+  actually reveal.
+- The angled cut is `clip-path:polygon(0 100%, 220px 0, 100% 0, 100% 100%)`. The
+  lean is a fixed **220px**, not a percentage, so the cut holds the same angle at
+  every viewport width. Percentages make it shallower as the window widens.
+- Layering is explicit: photo `z-index:1`, `.motif` `z-index:2`, `.hero-inner`
+  `z-index:3`. The motif needs its own z-index or it falls behind the photo.
+
+The `::after` scrim darkens the photo toward the cut. Without it the faint
+`#F2F4F5` racing line and the dot field disappear into the image, and the copy
+gets close to the bright grandstand at narrow desktop widths.
+
+The hero is a two-column grid above 980px and stacks below it. Both tracks are
+`minmax(0,...)` and both children carry `min-width:0` — without that, the
+`clamp()`-sized `h1` can push its `auto` grid minimum wider than the viewport and
+cause horizontal scrolling on narrow phones. Above 980px the second track is
+empty by design; it reserves the space the photo shows through.
 
 ## Partner logos
 

@@ -91,7 +91,9 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
 .btn-primary:hover{background:var(--green-dark);color:var(--white);}
 
 /* ---------- Motif ---------- */
-.motif{position:absolute;left:0;bottom:0;width:100%;height:42%;pointer-events:none;}
+/* z-index 2 puts the lines and dot field in front of the hero photo (z-index 1)
+   but still behind the copy (z-index 3). */
+.motif{position:absolute;left:0;bottom:0;width:100%;height:42%;pointer-events:none;z-index:2;}
 
 /* ---------- Nav ---------- */
 .nav{
@@ -124,12 +126,45 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
 
 /* ---------- Hero ---------- */
 .hero{position:relative;overflow:hidden;background:var(--charcoal);padding:0;}
+/* Right half of the hero. Sized to the revealed region rather than the whole
+   section: at full width, background-size:cover would scale the car across the
+   entire hero and the visible slice would start behind the front wheel.
+   The lean is a fixed 220px rather than a percentage so the cut keeps the same
+   angle at every viewport width. */
+.hero-photo{
+  position:absolute;top:0;bottom:0;right:0;left:45%;z-index:1;
+  background-image:url(hawthorne-car.jpg);
+  background-size:cover;background-position:center;
+  clip-path:polygon(0 100%, 220px 0, 100% 0, 100% 100%);
+}
+/* Darken toward the cut so the copy, the racing lines and the dot field all
+   hold up over the photo. */
+.hero-photo::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,
+    rgba(28,31,35,.96) 0%,
+    rgba(28,31,35,.62) 20%,
+    rgba(28,31,35,.18) 48%,
+    rgba(28,31,35,0) 72%);
+}
 .hero-inner{
-  position:relative;z-index:2;max-width:var(--wrap);margin:0 auto;
-  padding:104px 28px 112px;
+  position:relative;z-index:3;max-width:var(--wrap);margin:0 auto;
+  padding:112px 28px 120px;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+  gap:56px;align-items:center;
 }
 .hero-sub{color:rgba(255,255,255,.68);font-size:1.125rem;max-width:46ch;margin:24px 0 0;}
 .hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px;}
+/* min-width:0 on both tracks: the h1 is clamp()-sized, and an auto grid minimum
+   would let its min-content widen the grid past the viewport instead of wrapping. */
+.hero-copy{min-width:0;}
+/* The in-flow figure is the stacked mobile treatment only; above 980px the same
+   file is shown as the angled background instead. One asset, one request. */
+.hero-figure{display:none;margin:0;min-width:0;}
+.hero-figure img{
+  display:block;width:100%;height:auto;
+  border-radius:6px;border:1px solid rgba(255,255,255,.16);
+}
 
 /* ---------- Team ---------- */
 .groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:34px;margin-top:8px;}
@@ -213,7 +248,9 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
 
 /* ---------- Responsive ---------- */
 @media (max-width:980px){
-  .hero-inner{padding:76px 28px 88px;}
+  .hero-inner{grid-template-columns:minmax(0,1fr);gap:44px;padding:76px 28px 88px;}
+  .hero-photo{display:none;}
+  .hero-figure{display:block;}
   .groups{grid-template-columns:1fr;gap:26px;}
   .partner-grid{grid-template-columns:1fr;}
 }
@@ -273,6 +310,8 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
 
 <main id="main">
 <section class="hero" id="top">
+  <div class="hero-photo" role="img" aria-label="A Hawthorne Racing car turning in over the kerb, carrying Arbitr, Ketsudan, and AIMSPIndex partner branding."></div>
+
   <svg class="motif" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
     <defs>
       <pattern id="dotsHero" width="14" height="14" patternUnits="userSpaceOnUse">
@@ -294,12 +333,19 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
   </svg>
 
   <div class="hero-inner">
-    <p class="label">2026 campaign</p>
-    <h1>Precision<br />drives<br />victory</h1>
-    <p class="hero-sub">A two-car programme run on telemetry, short engineering loops, and racecraft that holds up when the plan breaks.</p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="#partners">Meet our partners</a>
+    <div class="hero-copy">
+      <p class="label">2026 campaign</p>
+      <h1>Precision<br />drives<br />victory</h1>
+      <p class="hero-sub">A two-car programme run on telemetry, short engineering loops, and racecraft that holds up when the plan breaks.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#partners">Meet our partners</a>
+      </div>
     </div>
+
+    <figure class="hero-figure">
+      <img src="hawthorne-car.jpg" width="1100" height="785" decoding="async" fetchpriority="high"
+           alt="A Hawthorne Racing car turning in over the kerb, carrying Arbitr, Ketsudan, and AIMSPIndex partner branding." />
+    </figure>
   </div>
 </section>
 
