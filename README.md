@@ -9,7 +9,7 @@ Hawthorne Racing is a demonstration brand. Content on the site is fictional.
 
 | File | Purpose |
 |------|---------|
-| `index.html` | The entire site. Fonts, logo mark, and full lockup are base64-embedded, so there are no external requests and no build step. |
+| `index.html` | The entire site: hero, a short team section, and the three partner cards. Fonts, the Hawthorne mark, and the Arbitr logo are base64-embedded, so there are no external requests and no build step. |
 | `404.html` | Branded not-found page. GitHub Pages serves this automatically. |
 | `CNAME` | Custom domain for Pages. Must contain exactly `hawthorneracing.com.au`. |
 | `.nojekyll` | Tells Pages to serve files as-is instead of running them through Jekyll. |
@@ -103,10 +103,26 @@ happen in one place.
 
 ## Notes
 
-- Brand contact details on the site use the `hawthorneracing.com` domain from the
-  brand system, while hosting is on `hawthorneracing.com.au`. Decide which is
-  canonical and make the email address match.
-- The header uses the icon mark plus the team name set in Barlow Condensed,
-  because the supplied horizontal lockup is a raster that goes soft below roughly
-  70px tall. If an SVG lockup becomes available, the header can use it directly at
-  any size.
+- `hawthorneracing.com.au` is canonical. The contact address on the site is
+  `info@hawthorneracing.com.au`, matching the hosting domain rather than the
+  `hawthorneracing.com` domain used elsewhere in the brand system.
+- The header and the sign-off both use the icon mark plus the team name set in
+  Barlow Condensed. The supplied horizontal lockup was dropped: it is a raster
+  with a non-uniform dark background, so it never sat flush on the page and it
+  went soft below roughly 70px tall. If an SVG lockup becomes available, either
+  spot can use it directly at any size.
+
+## Partner logos
+
+The partners section carries three cards. Only Arbitr has a real logo, embedded
+as a transparent PNG derived from `logo-white-horizontal` in the Arbitr brand
+assets — the source files are JPEGs on a black background, so the white artwork
+was converted to luminance-as-alpha to sit cleanly on the dark section.
+
+Ketsudan and AIMSPIndex have no logo files available, so both are set as
+letter-spaced Barlow wordmarks that visually match the weight of the Arbitr mark.
+If real logos arrive, swap all three to images at once so the row stays
+consistent, and keep them light-on-dark or alpha-masked.
+
+The wordmark cannot wrap, which is what the `max-width:420px` block in the CSS is
+for. Layout is verified free of horizontal overflow from 320px up.
