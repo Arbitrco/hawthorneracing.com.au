@@ -126,27 +126,6 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
 
 /* ---------- Hero ---------- */
 .hero{position:relative;overflow:hidden;background:var(--charcoal);padding:0;}
-/* Right half of the hero. Sized to the revealed region rather than the whole
-   section: at full width, background-size:cover would scale the car across the
-   entire hero and the visible slice would start behind the front wheel.
-   The lean is a fixed 220px rather than a percentage so the cut keeps the same
-   angle at every viewport width. */
-.hero-photo{
-  position:absolute;top:0;bottom:0;right:0;left:45%;z-index:1;
-  background-image:url(hawthorne-car.jpg);
-  background-size:cover;background-position:center;
-  clip-path:polygon(0 100%, 220px 0, 100% 0, 100% 100%);
-}
-/* Darken toward the cut so the copy, the racing lines and the dot field all
-   hold up over the photo. */
-.hero-photo::after{
-  content:"";position:absolute;inset:0;
-  background:linear-gradient(100deg,
-    rgba(28,31,35,.96) 0%,
-    rgba(28,31,35,.62) 20%,
-    rgba(28,31,35,.18) 48%,
-    rgba(28,31,35,0) 72%);
-}
 .hero-inner{
   position:relative;z-index:3;max-width:var(--wrap);margin:0 auto;
   padding:112px 28px 120px;
@@ -158,12 +137,26 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
 /* min-width:0 on both tracks: the h1 is clamp()-sized, and an auto grid minimum
    would let its min-content widen the grid past the viewport instead of wrapping. */
 .hero-copy{min-width:0;}
-/* The in-flow figure is the stacked mobile treatment only; above 980px the same
-   file is shown as the angled background instead. One asset, one request. */
-.hero-figure{display:none;margin:0;min-width:0;}
-.hero-figure img{
-  display:block;width:100%;height:auto;
-  border-radius:6px;border:1px solid rgba(255,255,255,.16);
+
+/* One <img> serves both hero treatments so srcset can pick a rendition for each.
+   Above 980px the figure is lifted out of flow to become the angled right half;
+   it is a child of .hero, not .hero-inner, so it can bleed past the wrap to the
+   section edge. The lean is a fixed 220px rather than a percentage so the cut
+   holds the same angle at every viewport width. */
+.hero-figure{
+  position:absolute;top:0;bottom:0;right:0;left:45%;z-index:1;margin:0;
+  clip-path:polygon(0 100%, 220px 0, 100% 0, 100% 100%);
+}
+.hero-figure img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;}
+/* Darken toward the cut, or the faint #F2F4F5 racing line and the dot field
+   disappear into the photo and the copy runs close to the bright grandstand. */
+.hero-figure::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(100deg,
+    rgba(28,31,35,.96) 0%,
+    rgba(28,31,35,.62) 20%,
+    rgba(28,31,35,.18) 48%,
+    rgba(28,31,35,0) 72%);
 }
 
 /* ---------- Team ---------- */
@@ -248,9 +241,17 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
 
 /* ---------- Responsive ---------- */
 @media (max-width:980px){
-  .hero-inner{grid-template-columns:minmax(0,1fr);gap:44px;padding:76px 28px 88px;}
-  .hero-photo{display:none;}
-  .hero-figure{display:block;}
+  .hero-inner{grid-template-columns:minmax(0,1fr);gap:44px;padding:76px 28px 40px;}
+  /* Back into flow, stacked under the copy. z-index needs position:relative to
+     apply, otherwise the motif paints over the photo. */
+  .hero-figure{
+    position:relative;inset:auto;z-index:3;clip-path:none;
+    max-width:var(--wrap);margin:0 auto;padding:0 28px 84px;
+  }
+  .hero-figure::after{content:none;}
+  .hero-figure img{
+    height:auto;border-radius:6px;border:1px solid rgba(255,255,255,.16);
+  }
   .groups{grid-template-columns:1fr;gap:26px;}
   .partner-grid{grid-template-columns:1fr;}
 }
@@ -276,6 +277,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
   .wrap,.footer-inner{padding-left:20px;padding-right:20px;}
   .nav-inner{padding-left:20px;padding-right:20px;gap:12px;}
   .hero-inner{padding-left:20px;padding-right:20px;}
+  .hero-figure{padding-left:20px;padding-right:20px;}
   .nav-logo{gap:8px;}
   .nav-logo .mark{width:40px;height:22px;}
   .wordmark{font-size:.95rem;letter-spacing:.3px;}
@@ -310,8 +312,6 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
 
 <main id="main">
 <section class="hero" id="top">
-  <div class="hero-photo" role="img" aria-label="A Hawthorne Racing car turning in over the kerb, carrying Arbitr, Ketsudan, and AIMSPIndex partner branding."></div>
-
   <svg class="motif" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">
     <defs>
       <pattern id="dotsHero" width="14" height="14" patternUnits="userSpaceOnUse">
@@ -341,12 +341,19 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
         <a class="btn btn-primary" href="#partners">Meet our partners</a>
       </div>
     </div>
-
-    <figure class="hero-figure">
-      <img src="hawthorne-car.jpg" width="1100" height="785" decoding="async" fetchpriority="high"
-           alt="A Hawthorne Racing car turning in over the kerb, carrying Arbitr, Ketsudan, and AIMSPIndex partner branding." />
-    </figure>
   </div>
+
+  <figure class="hero-figure">
+    <img src="hawthorne-car-1400.jpg"
+         srcset="hawthorne-car-480.jpg 480w,
+                 hawthorne-car-700.jpg 700w,
+                 hawthorne-car-1000.jpg 1000w,
+                 hawthorne-car-1400.jpg 1400w,
+                 hawthorne-car-1800.jpg 1800w"
+         sizes="(max-width:420px) calc(100vw - 40px), (max-width:980px) calc(100vw - 56px), 55vw"
+         width="1400" height="1120" decoding="async" fetchpriority="high"
+         alt="A Hawthorne Racing car turning in over the kerb, carrying Arbitr, Ketsudan, and AIMSPIndex partner branding." />
+  </figure>
 </section>
 
 <section id="team">
@@ -432,7 +439,7 @@ section[id]{scroll-margin-top:calc(var(--nav-h) + 8px);}
 <footer class="footer">
   <div class="footer-inner">
     <span class="mark" role="img" aria-label="Hawthorne Racing"></span>
-    <p>&copy; 2026 Hawthorne Racing. All rights reserved.</p>
+    <p>&copy; 2026 Arbitr Group. All rights reserved.</p>
     <p class="right">Hawthorne Racing is a demonstration brand used for scenario and product work.</p>
   </div>
 </footer>

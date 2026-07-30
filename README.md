@@ -10,7 +10,7 @@ Hawthorne Racing is a demonstration brand. Content on the site is fictional.
 | File | Purpose |
 |------|---------|
 | `index.html` | The entire site: hero, a short team section, and the three partner cards. Fonts, the Hawthorne mark, and all three partner logos are base64-embedded, so the only external request the page makes is the hero photo. No build step. |
-| `hawthorne-car.jpg` | Hero photo, 1100x785, ~140KB. The one asset deliberately *not* inlined — see below. |
+| `hawthorne-car-*.jpg` | Hero photo at five widths (480/700/1000/1400/1800), served via `srcset`. The one asset deliberately *not* inlined — see below. |
 | `404.html` | Branded not-found page. GitHub Pages serves this automatically. |
 | `CNAME` | Custom domain for Pages. Must contain exactly `hawthorneracing.com.au`. |
 | `.nojekyll` | Tells Pages to serve files as-is instead of running them through Jekyll. |
@@ -115,37 +115,71 @@ happen in one place.
 
 ## Hero photo
 
-`hawthorne-car.jpg` is an AI-generated image (Gemini), 1400x1120, ~218KB, cropped
-to keep the front wing intact and re-encoded at JPEG quality 82. It carries all
-three partner decals.
+The hero photo is an AI-generated image (Gemini), cropped 1.25:1 to keep the front
+wing intact and re-encoded as JPEG. It carries all three partner decals.
 
-It is a separate file rather than base64 in `:root` like the logos, on purpose. A
-218KB inline photo would sit in the critical path and block HTML parsing until it
+It is a separate file rather than base64 in `:root` like the logos, on purpose. An
+inline photo would sit in the critical path and block HTML parsing until it
 finished downloading, and it could not be cached independently of the page. The
 logos are small enough that inlining wins; a photo is not.
 
-### Two treatments, one asset
+### Renditions
 
-Above 980px the photo is `.hero-photo`, an absolutely positioned background
-filling the right half, with the racing lines and dot field in front of it.
-Below 980px it is the in-flow `.hero-figure` stacked under the copy. Only one is
-ever displayed, and both point at the same file, so it stays a single request.
+Five widths, all the same crop, generated from the original 2276x1856 source:
 
-Three things about `.hero-photo` that are easy to break:
+| Width | Quality | Size |
+|-------|---------|------|
+| 480 | 84 | 45KB |
+| 700 | 84 | 82KB |
+| 1000 | 82 | 133KB |
+| 1400 | 82 | 218KB |
+| 1800 | 82 | 318KB |
 
+The two small ones use quality 84 because heavy downscaling hides JPEG artefacts
+less effectively at small pixel dimensions.
+
+Selection is `srcset` with width descriptors plus `sizes`, **not** `<picture>`
+with `media`. Every rendition is the same crop, so this is resolution switching,
+and `srcset` is what responds to device pixel ratio. `<picture>` is for art
+direction — reach for it only if you want a genuinely different crop per
+breakpoint. Verified picks: 480 at 485px/1x, 700 at 723px/1x, 1000 at 1403px/1x
+and at 474px/2x, 1800 at 1403px/2x.
+
+If you change the layout widths, update `sizes` to match or the browser will pick
+the wrong rendition. It currently reads:
+
+```
+(max-width:420px) calc(100vw - 40px), (max-width:980px) calc(100vw - 56px), 55vw
+```
+
+### Two treatments, one <img>
+
+A single `<img>` serves both so `srcset` applies to each. Above 980px
+`.hero-figure` is lifted out of flow to become the angled right half; below 980px
+it drops back into flow, stacked under the copy.
+
+Four things that are easy to break:
+
+- The figure is a child of `.hero`, **not** `.hero-inner`. It has to be, or being
+  absolutely positioned inside the wrap would stop it bleeding to the section
+  edge.
 - It is inset to `left:45%`, **not** stretched across the whole hero. At full
-  width, `background-size:cover` scales the car across the entire section and the
+  width, `object-fit:cover` scales the car across the entire section and the
   revealed slice starts behind the front wheel. Size the layer to the region you
   actually reveal.
 - The angled cut is `clip-path:polygon(0 100%, 220px 0, 100% 0, 100% 100%)`. The
   lean is a fixed **220px**, not a percentage, so the cut holds the same angle at
   every viewport width. Percentages make it shallower as the window widens.
-- Layering is explicit: photo `z-index:1`, `.motif` `z-index:2`, `.hero-inner`
-  `z-index:3`. The motif needs its own z-index or it falls behind the photo.
+- Layering is explicit: figure `z-index:1`, `.motif` `z-index:2`, `.hero-inner`
+  `z-index:3`. The motif needs its own z-index or it falls behind the photo. On
+  mobile the figure switches to `position:relative` with `z-index:3` — z-index
+  does nothing on a static element, and without it the motif paints over the
+  photo.
 
 The `::after` scrim darkens the photo toward the cut. Without it the faint
 `#F2F4F5` racing line and the dot field disappear into the image, and the copy
-gets close to the bright grandstand at narrow desktop widths.
+gets close to the bright grandstand at narrow desktop widths. It is switched off
+on mobile, where the photo is a bordered block instead.
 
 The hero is a two-column grid above 980px and stacks below it. Both tracks are
 `minmax(0,...)` and both children carry `min-width:0` — without that, the
