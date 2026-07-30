@@ -1,0 +1,112 @@
+# hawthorneracing.com.au
+
+Static one-page site for Hawthorne Racing, hosted on GitHub Pages at
+[hawthorneracing.com.au](https://hawthorneracing.com.au).
+
+Hawthorne Racing is a demonstration brand. Content on the site is fictional.
+
+## Contents
+
+| File | Purpose |
+|------|---------|
+| `index.html` | The entire site. Fonts, logo mark, and full lockup are base64-embedded, so there are no external requests and no build step. |
+| `404.html` | Branded not-found page. GitHub Pages serves this automatically. |
+| `CNAME` | Custom domain for Pages. Must contain exactly `hawthorneracing.com.au`. |
+| `.nojekyll` | Tells Pages to serve files as-is instead of running them through Jekyll. |
+| `robots.txt` | Allows all crawlers, points to the sitemap. |
+| `sitemap.xml` | Single-URL sitemap. Update `lastmod` when the page changes. |
+
+## First-time deploy
+
+**1. Create the repo**
+
+Create a repository named `hawthorneracing.com.au` on GitHub. Public is required
+for Pages on a free plan; private works on Pro and above.
+
+**2. Push these files to the repo root**
+
+```bash
+git init
+git add .
+git commit -m "Initial site"
+git branch -M main
+git remote add origin git@github.com:<your-account>/hawthorneracing.com.au.git
+git push -u origin main
+```
+
+Or use **Add file → Upload files** in the GitHub web UI and drag the files in.
+If you upload via the browser, note that `.nojekyll` is a dotfile and some
+browsers hide it; if it does not appear in the repo, create it with
+**Add file → Create new file**, name it `.nojekyll`, and leave it empty.
+
+**3. Turn on Pages**
+
+Repo **Settings → Pages**:
+
+- Source: **Deploy from a branch**
+- Branch: `main`, folder `/ (root)`
+- Save
+
+The first build takes a minute or two. The site will appear at
+`https://<your-account>.github.io/hawthorneracing.com.au/` before the custom
+domain is live.
+
+**4. Set the custom domain**
+
+Still in **Settings → Pages**, under **Custom domain**, enter
+`hawthorneracing.com.au` and save. GitHub will commit or overwrite the `CNAME`
+file to match, which is expected.
+
+**5. Add the DNS records**
+
+At the DNS provider for `hawthorneracing.com.au`, create four A records for the
+apex (host `@`):
+
+```
+185.199.108.153
+185.199.109.153
+185.199.110.153
+185.199.111.153
+```
+
+Optionally add the matching AAAA records for IPv6:
+
+```
+2606:50c0:8000::153
+2606:50c0:8001::153
+2606:50c0:8002::153
+2606:50c0:8003::153
+```
+
+If the provider supports ALIAS or ANAME at the apex, point it to
+`<your-account>.github.io` instead of using A records. That survives future
+GitHub IP changes.
+
+For the `www` variant, add a CNAME record: host `www`, value
+`<your-account>.github.io`. Set up both apex and `www` before GitHub issues the
+certificate, otherwise the certificate will only cover whichever was live first.
+
+**6. Enforce HTTPS**
+
+Once DNS resolves, return to **Settings → Pages** and tick **Enforce HTTPS**.
+The certificate can take up to an hour to issue. If it stalls, remove the custom
+domain, save, re-add it, and save again to force reissue.
+
+## Making changes
+
+Edit `index.html` and push. Pages redeploys on every push to `main`, usually
+within a minute. Hard-refresh to get past browser caching.
+
+The page is one file with the CSS in a `<style>` block at the top and a small
+script at the bottom. Brand tokens live in the `:root` block, so palette changes
+happen in one place.
+
+## Notes
+
+- Brand contact details on the site use the `hawthorneracing.com` domain from the
+  brand system, while hosting is on `hawthorneracing.com.au`. Decide which is
+  canonical and make the email address match.
+- The header uses the icon mark plus the team name set in Barlow Condensed,
+  because the supplied horizontal lockup is a raster that goes soft below roughly
+  70px tall. If an SVG lockup becomes available, the header can use it directly at
+  any size.
