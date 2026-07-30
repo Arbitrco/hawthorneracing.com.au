@@ -114,15 +114,33 @@ happen in one place.
 
 ## Partner logos
 
-The partners section carries three cards. Only Arbitr has a real logo, embedded
-as a transparent PNG derived from `logo-white-horizontal` in the Arbitr brand
-assets — the source files are JPEGs on a black background, so the white artwork
-was converted to luminance-as-alpha to sit cleanly on the dark section.
+All three partners use their real logo, each embedded as a transparent PNG in
+`:root` so the page still makes no external requests. No source file arrived with
+an alpha channel, so each needed a different extraction:
 
-Ketsudan and AIMSPIndex have no logo files available, so both are set as
-letter-spaced Barlow wordmarks that visually match the weight of the Arbitr mark.
-If real logos arrive, swap all three to images at once so the row stays
-consistent, and keep them light-on-dark or alpha-masked.
+- **Ketsudan** (`--ketsudan`) — from `2.png` in the Ketsudan brand folder, white
+  lockup on flat `#2367B2`. Alpha was keyed off the **red** channel, which
+  separates that blue from white across 35→255; green and blue give a much
+  narrower range and a dirtier edge. Ignore `Ketsudan Logo - Full.PNG`: it is blue
+  artwork on opaque white, and blue on this charcoal is about 2.6:1 contrast.
+- **Arbitr** (`--arbitr`) — derived from `logo-white-horizontal` in the Arbitr
+  brand assets. Those source files are JPEGs on a black background, so the white
+  artwork was converted to luminance-as-alpha to sit cleanly on the dark section.
+- **AIMSPIndex** (`--aimspi`) — the retro CRT mark. Supplied opaque on `#1A1A1A`,
+  so the dark surround was flood-filled from the outside corners to transparent.
+  Flood fill rather than a colour key, because the screen interior is also near
+  black and must stay: the beige bezel encloses it, so the fill cannot reach it.
 
-The wordmark cannot wrap, which is what the `max-width:420px` block in the CSS is
-for. Layout is verified free of horizontal overflow from 320px up.
+Ketsudan and Arbitr share the same brand blue, so both render as white line art
+and the CRT is the row's only colour. If you swap one back to a colour treatment,
+expect it to compete with the CRT.
+
+Two layout constraints worth knowing before editing this section:
+
+- `.partner-plate` is **112px** tall, sized to the CRT rather than to the two
+  horizontal marks. The CRT is nearly square (420x336), and anything shorter
+  renders its screen text too small to read; Ketsudan and Arbitr centre in the
+  extra space. Shrinking the plate will make the AIMSPIndex logo illegible.
+- The Hawthorne wordmark in the nav and sign-off cannot wrap, which is what the
+  `max-width:420px` block in the CSS is for. Layout is verified free of
+  horizontal overflow from 320px to 1400px.
